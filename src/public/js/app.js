@@ -14,6 +14,7 @@ let myStream;
 let muted = false;
 let cameraOff = false;
 let myPeerConnection;
+let myDataChannel;
 
 const getCameras = async () => {
   try {
@@ -114,6 +115,10 @@ welcomeForm.addEventListener("submit", handleWelcomSubmit);
 // 접속
 
 socket.on("welcome", async () => {
+  // dataChannel
+  myDataChannel = myPeerConnection.createDataChannel("chat");
+  myDataChannel.addEventListener("message", (e) => console.log(e));
+  // 보낼때 myDataChannel.send('hello')
   // 연결을 구성할 offer를 생성
   const offer = await myPeerConnection.createOffer();
   myPeerConnection.setLocalDescription(offer);
@@ -121,6 +126,10 @@ socket.on("welcome", async () => {
 });
 // offer를 받음.
 socket.on("offer", async (offer) => {
+  myPeerConnection.addEventListener("datachannel", (e) => {
+    myDataChannel = e.channel;
+    myDataChannel.addEventListener("message", console.log);
+  });
   myPeerConnection.setRemoteDescription(offer);
   const answer = await myPeerConnection.createAnswer();
   myPeerConnection.setLocalDescription(answer);
